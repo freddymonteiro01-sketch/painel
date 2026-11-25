@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnóstico do painel</title>
+</head>
+<body style="margin:0;font-family:Helvetica,Arial,sans-serif;background:#fff;color:#000">
+<div id="r" style="background:#ffd400;padding:12px 16px;font-size:16px;line-height:1.5"></div>
+<iframe id="f" style="display:block;width:100%;height:70vh;border:0;border-top:4px solid #000"></iframe>
+<script>
+var R = document.getElementById('r');
+function log(s, cor) { var p = document.createElement('div'); p.textContent = s; if (cor) { p.style.color = cor; p.style.fontWeight = 'bold'; } R.appendChild(p); }
+window.addEventListener('message', function (e) { if (e.data && e.data.erro) { log('ERRO NO PAINEL: ' + e.data.erro, '#b00000'); } }, false);
+log('1. Diagnóstico rodando');
+var x = new XMLHttpRequest();
+x.open('GET', './index.html?nc=' + Date.now(), true);
+x.onreadystatechange = function () {
+  if (x.readyState !== 4) { return; }
+  log('2. Painel baixado: status ' + x.status + ', ' + x.responseText.length + ' caracteres');
+  var rep = '<script>window.onerror=function(m,s,l,c){try{parent.postMessage({erro:m+" (linha "+l+", col "+c+")"},"*");}catch(e){}};<\/script>';
+  var html = x.responseText.replace('<head>', '<head>' + rep);
+  var f = document.getElementById('f');
+  f.onload = function () {
+    setTimeout(function () {
+      try {
+        var d = f.contentDocument, w = f.contentWindow, b = d.body;
+        log('3. Painel montado: classe="' + b.className + '", fundo=' + w.getComputedStyle(b).backgroundColor +
+          ', botões=' + d.querySelectorAll('.ctl').length + ', relógio="' + d.getElementById('hh').textContent +
+          '", altura=' + d.getElementById('app').offsetHeight + 'px, largura=' + d.getElementById('app').offsetWidth + 'px');
+      } catch (e) { log('3. Não consegui ler o painel: ' + e.message, '#b00000'); }
+    }, 2000);
+  };
+  if ('srcdoc' in f) { f.srcdoc = html; }
+  else { log('(srcdoc indisponível, usando outro método)'); var dd = f.contentWindow.document; dd.open(); dd.write(html); dd.close(); f.onload(); }
+};
+x.send();
+</script>
+</body>
+</html>
