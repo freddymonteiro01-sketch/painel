@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<title>Gaveta · painel da casa</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Casa">
+<meta name="theme-color" content="#0a0a0a">
+<style>
+*{box-sizing:border-box;-webkit-box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:rgba(0,0,0,0);}
+html,body{height:100%;overflow:hidden;}
+body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-user-select:none;user-select:none;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased;}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
+button{cursor:pointer;border:0;background:none;}
+.mono{font-family:Menlo,"Courier New",monospace;}
+#app{position:absolute;top:10px;left:10px;right:10px;bottom:10px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-transition:-webkit-transform 2s;transition:transform 2s;}
+.row{display:-webkit-flex;display:flex;min-height:0;}
+#hdr{-webkit-flex:0 0 34px;flex:0 0 34px;-webkit-align-items:center;align-items:center;padding:0 8px;}
+#r1{-webkit-flex:0 0 37%;flex:0 0 37%;}
+#r2{-webkit-flex:0 0 23%;flex:0 0 23%;}
+#r3{-webkit-flex:1 1 0;flex:1 1 0;}
+.tile{position:relative;margin:6px;border-radius:16px;padding:16px 18px;overflow:hidden;min-width:0;}
+.lbl{font-family:Menlo,"Courier New",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;opacity:.6;display:block;margin-bottom:6px;white-space:nowrap;}
+#logo{font-family:Menlo,"Courier New",monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:bold;}
+#logo .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;vertical-align:0;}
+#tag{font-family:Menlo,"Courier New",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;opacity:.5;margin-left:14px;}
+.sp{-webkit-flex:1;flex:1;}
+.hstat{font-family:Menlo,"Courier New",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.6;margin-left:16px;}
+#net:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:#3c3;}
+#net.off:before{background:#f33;}
+#btn-cfg{font-family:Menlo,"Courier New",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;padding:7px 12px;border-radius:8px;margin-left:16px;}
+#t-clock{-webkit-flex:1.75;flex:1.75;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-justify-content:space-between;justify-content:space-between;}
+#greet{font-size:20px;opacity:.75;}
+#clock{line-height:.9;white-space:nowrap;}
+#hh{font-size:150px;font-weight:200;letter-spacing:-4px;}
+#hh .colon{position:relative;top:-10px;margin:0 2px;}
+#hh .colon.blink{opacity:.2;}
+#ss{font-family:Menlo,"Courier New",monospace;font-size:26px;opacity:.5;margin-left:10px;vertical-align:top;position:relative;top:22px;}
+#date{font-size:22px;}
+#date b{font-weight:600;}
+#t-wx{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;}
+#wx-main{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;margin-top:4px;}
+#wx-ico{font-size:58px;line-height:1;margin-right:14px;}
+#wx-temp{font-size:72px;font-weight:200;line-height:1;letter-spacing:-2px;}
+#wx-desc{font-size:17px;margin-top:8px;}
+#wx-meta{font-family:Menlo,"Courier New",monospace;font-size:11px;letter-spacing:.06em;opacity:.7;margin-top:6px;}
+#wx-days{display:-webkit-flex;display:flex;margin-top:auto;padding-top:10px;}
+.wd{-webkit-flex:1;flex:1;text-align:center;font-size:13px;padding:6px 0;border-radius:10px;margin:0 3px;}
+.wd .d{font-family:Menlo,"Courier New",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.6;}
+.wd .i{font-size:22px;margin:2px 0;}
+#ctls{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;}
+.ctl{-webkit-flex:1 1 0;flex:1 1 0;margin:6px;border-radius:16px;padding:12px 14px;position:relative;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;cursor:pointer;-webkit-transition:background .2s,-webkit-transform .1s;transition:background .2s,transform .1s;min-width:0;}
+.ctl:active{-webkit-transform:scale(.96);transform:scale(.96);}
+.ctl-top{display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;font-family:Menlo,"Courier New",monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;}
+.ctl-top .idx{opacity:.5;}
+.ctl-top .st{opacity:.6;}
+.ctl.on .ctl-top .st{opacity:1;}
+.ctl.on .ctl-top .st:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px;-webkit-animation:pulse 1.6s infinite;animation:pulse 1.6s infinite;}
+.ctl-ico{font-size:36px;line-height:1;margin:auto 0 6px;}
+.ctl-nome{font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ctl-sent{position:absolute;right:12px;bottom:12px;font-family:Menlo,"Courier New",monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;opacity:0;-webkit-transition:opacity .3s;transition:opacity .3s;}
+.ctl-sent.show{opacity:.8;}
+@-webkit-keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+#t-list{-webkit-flex:1.2;flex:1.2;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;}
+#list-form{display:-webkit-flex;display:flex;margin-bottom:8px;}
+#list-in{-webkit-flex:1;flex:1;min-width:0;border:0;border-radius:10px;padding:9px 12px;font-size:15px;outline:none;-webkit-appearance:none;-webkit-user-select:text;user-select:text;}
+#list-add{margin-left:6px;border-radius:10px;padding:0 14px;font-size:20px;}
+#list{list-style:none;overflow-y:auto;-webkit-overflow-scrolling:touch;-webkit-flex:1;flex:1;}
+#list li{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;padding:8px 2px;font-size:16px;border-bottom:1px solid rgba(128,128,128,.18);}
+#list li .bx{width:18px;height:18px;border-radius:5px;border:1.5px solid;margin-right:10px;-webkit-flex:0 0 18px;flex:0 0 18px;text-align:center;font-size:12px;line-height:15px;}
+#list li .tx{-webkit-flex:1;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#list li.ok .tx{text-decoration:line-through;opacity:.4;}
+#list li .x{opacity:.35;padding:0 6px;font-size:18px;}
+#list-clear{font-family:Menlo,"Courier New",monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;position:absolute;right:16px;top:16px;}
+#t-timer{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;text-align:center;}
+#tm-disp{font-size:64px;font-weight:200;letter-spacing:-1px;margin:auto 0 4px;line-height:1;}
+#tm-bar{height:4px;border-radius:2px;overflow:hidden;margin:6px 10px 12px;background:rgba(128,128,128,.25);}
+#tm-fill{height:100%;width:0;-webkit-transition:width .5s linear;transition:width .5s linear;}
+.tm-row{display:-webkit-flex;display:flex;}
+.tm-row button{-webkit-flex:1;flex:1;margin:3px;border-radius:10px;padding:9px 0;font-family:Menlo,"Courier New",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;}
+#t-timer.alarme{-webkit-animation:alarme .6s infinite;animation:alarme .6s infinite;}
+@-webkit-keyframes alarme{50%{opacity:.45}}
+@keyframes alarme{50%{opacity:.45}}
+#t-notes{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;}
+#notes{-webkit-flex:1;flex:1;border:0;background:transparent;resize:none;outline:none;font-size:17px;line-height:1.5;-webkit-user-select:text;user-select:text;-webkit-appearance:none;}
+#dim{position:fixed;top:0;left:0;right:0;bottom:0;background:#000;opacity:0;pointer-events:none;-webkit-transition:opacity 3s;transition:opacity 3s;z-index:5;}
+#dim.on{opacity:.62;}
+#cfg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:10;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#cfg.open{display:block;}
+#cfg-box{max-width:720px;margin:30px auto;border-radius:18px;padding:22px 24px;background:#f4f1ea;color:#1b1b1b;}
+#cfg-box h2{font-size:22px;font-weight:600;margin-bottom:4px;}
+#cfg-box .sub{font-size:13px;opacity:.6;margin-bottom:16px;}
+#cfg-box h3{font-family:Menlo,"Courier New",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;opacity:.6;margin:18px 0 8px;}
+#cfg-box input,#cfg-box select{border:1px solid #d5cfc2;background:#fff;border-radius:8px;padding:8px 10px;font-size:15px;-webkit-appearance:none;-webkit-user-select:text;user-select:text;min-width:0;}
+.frow{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;margin-bottom:6px;}
+.frow > *{margin-right:6px;}
+.frow .grow{-webkit-flex:1;flex:1;}
+.chip{padding:9px 14px;border-radius:999px;border:1px solid #cfc8b9;font-size:14px;margin-right:6px;background:#fff;}
+.chip.sel{background:#1b1b1b;color:#fff;border-color:#1b1b1b;}
+.bt{padding:10px 16px;border-radius:10px;font-size:15px;background:#e4ddcf;}
+.bt.pri{background:#1b1b1b;color:#fff;}
+.note{font-size:12px;opacity:.6;line-height:1.45;}
+#geo-res{font-size:13px;opacity:.7;margin-left:6px;}
+.t-dots{background:#0a0a0a;color:#ededed;background-image:-webkit-radial-gradient(#1d1d1d 1px,transparent 1.6px);background-image:radial-gradient(#1d1d1d 1px,transparent 1.6px);background-size:7px 7px;}
+.t-dots .tile,.t-dots .ctl{background:#121212;border:1px solid #232323;}
+.t-dots #logo .dot{background:#ff3b30;box-shadow:0 0 10px #ff3b30;}
+.t-dots #btn-cfg{border:1px solid #333;}
+.t-dots #hh,.t-dots #wx-temp,.t-dots #tm-disp{font-family:Menlo,"Courier New",monospace;font-weight:normal;letter-spacing:-6px;}
+.t-dots #hh{font-size:132px;}
+.t-dots #wx-temp,.t-dots #tm-disp{letter-spacing:-3px;}
+.t-dots .wd{background:#181818;}
+.t-dots .ctl.on{border-color:#ff3b30;background:#1a0d0c;}
+.t-dots .ctl.on .st{color:#ff3b30;}
+.t-dots .ctl.on .st:before{background:#ff3b30;}
+.t-dots #list-in{background:#1b1b1b;}
+.t-dots #list-add,.t-dots .tm-row button{background:#1f1f1f;}
+.t-dots #tm-go{background:#ff3b30;color:#fff;}
+.t-dots #tm-fill{background:#ff3b30;}
+.t-paper{background:#e8dcc6;color:#2b2118;font-family:"Avenir Next",Avenir,"Helvetica Neue",sans-serif;}
+.t-paper .tile,.t-paper .ctl{background:#f6eedd;box-shadow:0 5px 0 rgba(80,50,20,.18),0 10px 18px rgba(80,50,20,.10);}
+.t-paper #t-clock{background:#c8643b;color:#fff6e8;}
+.t-paper #t-wx{background:#d9a441;color:#2b2118;}
+.t-paper #t-timer{background:#6b7a3c;color:#f6eedd;}
+.t-paper #logo .dot{background:#c8643b;}
+.t-paper #btn-cfg{background:#2b2118;color:#f6eedd;}
+.t-paper #hh,.t-paper #wx-temp,.t-paper #tm-disp{font-weight:700;letter-spacing:-3px;}
+.t-paper .wd{background:rgba(255,255,255,.28);}
+.t-paper .ctl.on{background:#2b2118;color:#f6eedd;-webkit-transform:translateY(3px);transform:translateY(3px);box-shadow:0 2px 0 rgba(80,50,20,.25);}
+.t-paper .ctl.on .st:before{background:#d9a441;}
+.t-paper #list-in{background:#ebe1cd;}
+.t-paper #list-add{background:#c8643b;color:#fff;}
+.t-paper .tm-row button{background:rgba(255,255,255,.18);}
+.t-paper #tm-go{background:#f6eedd;color:#3e4a20;}
+.t-paper #tm-fill{background:#f6eedd;}
+.t-nixie{background:#24160d;color:#f3d9bd;background-image:-webkit-repeating-linear-gradient(88deg,rgba(255,255,255,.015) 0,rgba(255,255,255,.015) 3px,transparent 3px,transparent 11px);background-image:repeating-linear-gradient(88deg,rgba(255,255,255,.015) 0,rgba(255,255,255,.015) 3px,transparent 3px,transparent 11px);}
+.t-nixie .tile,.t-nixie .ctl{background:#130b06;border:1px solid #3a2416;box-shadow:inset 0 0 24px rgba(0,0,0,.6);}
+.t-nixie #logo .dot{background:#ff8a2a;box-shadow:0 0 12px #ff8a2a;}
+.t-nixie #btn-cfg{border:1px solid #5a3a22;}
+.t-nixie #hh,.t-nixie #wx-temp,.t-nixie #tm-disp,.t-nixie #ss{color:#ff9a3c;text-shadow:0 0 6px #ff7a1a,0 0 22px rgba(255,110,20,.55);font-family:"Courier New",Courier,monospace;font-weight:normal;letter-spacing:-2px;}
+.t-nixie .wd{background:#1c110a;}
+.t-nixie .ctl.on{border-color:#ff8a2a;box-shadow:inset 0 0 26px rgba(255,120,30,.25);}
+.t-nixie .ctl.on .st{color:#ff9a3c;}
+.t-nixie .ctl.on .st:before{background:#ff8a2a;}
+.t-nixie #list-in{background:#21150c;}
+.t-nixie #list-add,.t-nixie .tm-row button{background:#24170e;}
+.t-nixie #tm-go{background:#ff8a2a;color:#1a0e06;}
+.t-nixie #tm-fill{background:#ff8a2a;box-shadow:0 0 8px #ff8a2a;}
+@media (orientation:portrait){
+#r1{-webkit-flex:0 0 31%;flex:0 0 31%;}
+#r2{-webkit-flex:0 0 30%;flex:0 0 30%;}
+.ctl{-webkit-flex:1 1 28%;flex:1 1 28%;}
+#hh{font-size:104px;}
+.t-dots #hh{font-size:92px;}
+#ss{top:12px;font-size:20px;}
+#wx-temp{font-size:56px;}
+#wx-ico{font-size:44px;}
+#r1{-webkit-flex:0 0 29%;flex:0 0 29%;}
+#r2{-webkit-flex:0 0 29%;flex:0 0 29%;}
+#tm-disp{font-size:44px;}
+.tm-row button{font-size:11px;padding:8px 0;}
+#t-timer{-webkit-justify-content:center;justify-content:center;}
+#t-timer .lbl{position:absolute;top:16px;left:0;right:0;}
+#tm-disp{margin:0 0 4px;}
+#list-clear{top:auto;bottom:14px;}
+#tag{display:none;}
+}
+@media (max-width:700px) and (orientation:landscape){ #hh{font-size:96px;} #wx-days{display:none;} }
+</style>
+</head>
+<body class="t-dots">
+<div id="app">
+<div id="hdr" class="row">
+<span id="logo"><span class="dot"></span>Gaveta</span>
+<span id="tag">Nº 001 · recontratado como painel da casa</span>
+<span class="sp"></span>
+<span class="hstat" id="wx-upd"></span>
+<span class="hstat" id="net">online</span>
+<button id="btn-cfg">Ajustes</button>
+</div>
+<div id="r1" class="row">
+<div class="tile" id="t-clock">
+<div><span class="lbl">[01] Agora</span><div id="greet">Olá</div></div>
+<div id="clock"><span id="hh">--:--</span><span id="ss">--</span></div>
+<div id="date">—</div>
+</div>
+<div class="tile" id="t-wx">
+<span class="lbl" id="wx-lbl">[02] Clima</span>
+<div id="wx-main"><span id="wx-ico"></span><span id="wx-temp">--°</span></div>
+<div id="wx-desc">Carregando…</div>
+<div id="wx-meta"></div>
+<div id="wx-days"></div>
+</div>
+</div>
+<div id="r2" class="row"><div id="ctls"></div></div>
+<div id="r3" class="row">
+<div class="tile" id="t-list">
+<span class="lbl">[04] Lista de compras</span>
+<button id="list-clear">Limpar feitos</button>
+<form id="list-form" autocomplete="off"><input id="list-in" type="text" placeholder="Adicionar item…"><button id="list-add" type="submit">+</button></form>
+<ul id="list"></ul>
+</div>
+<div class="tile" id="t-timer">
+<span class="lbl">[05] Timer da cozinha</span>
+<div id="tm-disp">00:00</div>
+<div id="tm-bar"><div id="tm-fill"></div></div>
+<div class="tm-row"><button data-m="1">+1</button><button data-m="5">+5</button><button data-m="10">+10</button><button data-m="25">+25</button></div>
+<div class="tm-row"><button id="tm-go">Iniciar</button><button id="tm-rst">Zerar</button></div>
+</div>
+<div class="tile" id="t-notes">
+<span class="lbl">[06] Recados</span>
+<textarea id="notes" spellcheck="false" placeholder="Toque para escrever um recado…"></textarea>
+</div>
+</div>
+</div>
+<div id="dim"></div>
+<div id="cfg">
+<div id="cfg-box">
+<h2>Ajustes</h2>
+<div class="sub">Tudo fica salvo só neste iPad.</div>
+<h3>Tema</h3>
+<div class="frow" id="cfg-temas">
+<button class="chip" data-t="dots">Dots</button>
+<button class="chip" data-t="paper">Paper cut</button>
+<button class="chip" data-t="nixie">Nixie</button>
+</div>
+<h3>Cidade do clima</h3>
+<div class="frow"><input id="geo-q" class="grow" type="text" placeholder="Ex.: Buenos Aires, São Paulo, Lisboa"><button class="bt" id="geo-go">Buscar</button></div>
+<div class="frow"><input id="c-cidade" class="grow" type="text" placeholder="Nome exibido"><input id="c-lat" type="text" style="width:96px" placeholder="lat"><input id="c-lon" type="text" style="width:96px" placeholder="lon"><span id="geo-res"></span></div>
+<h3>Botões da casa</h3>
+<div id="cfg-btns"></div>
+<p class="note">O link é opcional. Se você usa Home Assistant, crie uma automação com gatilho <b>Webhook</b> e cole aqui o endereço (ex.: http://192.168.0.10:8123/api/webhook/luz-sala). Cada toque envia um POST com {"botao","estado"}. Sem link, o botão funciona como lembrete do que está ligado.</p>
+<h3>Modo noite (escurece a tela)</h3>
+<div class="frow">Das <select id="c-ni"></select> às <select id="c-nf"></select></div>
+<p class="note">Toque no relógio para escurecer/clarear na hora.</p>
+<div class="frow" style="margin-top:22px">
+<button class="bt pri" id="cfg-save">Salvar</button>
+<button class="bt" id="cfg-cancel">Cancelar</button>
+<span class="sp"></span>
+<button class="bt" id="cfg-reset">Restaurar padrão</button>
+</div>
+</div>
+</div>
+<script>
+(function () {
+'use strict';
+var DIAS = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+var DIAS_C = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+var mem = {};
+function load(k, def) {
+try { var v = window.localStorage.getItem('gaveta_' + k); if (v !== null) { return JSON.parse(v); } } catch (e) {}
+return mem.hasOwnProperty(k) ? mem[k] : def;
+}
+function save(k, v) {
+mem[k] = v;
+try { window.localStorage.setItem('gaveta_' + k, JSON.stringify(v)); } catch (e) {}
+}
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+function $(id) { return document.getElementById(id); }
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+function esc(s) {
+return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+}
+function closest(el, stop, attr) {
+while (el && el !== stop) { if (el.getAttribute && el.getAttribute(attr) !== null) { return el; } el = el.parentNode; }
+return null;
+}
+var PADRAO = {
+tema: 'dots', cidade: 'Buenos Aires', lat: -34.61, lon: -58.38, noiteIni: 23, noiteFim: 6,
+botoes: [
+{ nome: 'Luz da sala', icone: '💡', url: '' },
+{ nome: 'Cozinha', icone: '🍳', url: '' },
+{ nome: 'Quarto', icone: '🛏', url: '' },
+{ nome: 'Ar-condicionado', icone: '❄️', url: '' },
+{ nome: 'Portão', icone: '🚪', url: '' },
+{ nome: 'Modo cinema', icone: '🎬', url: '' }
+]
+};
+var cfg = load('cfg', null);
+if (!cfg || !cfg.botoes) { cfg = clone(PADRAO); }
+var k;
+for (k in PADRAO) { if (PADRAO.hasOwnProperty(k) && cfg[k] === undefined) { cfg[k] = clone(PADRAO[k]); } }
+var estados = load('estados', [false, false, false, false, false, false]);
+var lista = load('lista', [{ t: 'Leite', ok: false }, { t: 'Pão', ok: false }, { t: 'Café', ok: true }]);
+function aplicaTema() {
+document.body.className = 't-' + cfg.tema;
+var tc = { dots: '#0a0a0a', paper: '#e8dcc6', nixie: '#24160d' }[cfg.tema];
+var m = document.querySelector('meta[name=theme-color]');
+if (m && tc) { m.setAttribute('content', tc); }
+}
+var override = false, ultimoAuto = null, ultimoMin = -1, shiftI = 0;
+var SHIFTS = [[0, 0], [2, 1], [1, -2], [-2, 1], [-1, -1], [2, -1]];
+function noiteAuto(h) {
+var a = cfg.noiteIni, b = cfg.noiteFim;
+if (a === b) { return false; }
+return a > b ? (h >= a || h < b) : (h >= a && h < b);
+}
+function aplicaNoite() {
+var h = new Date().getHours();
+var auto = noiteAuto(h);
+if (auto !== ultimoAuto) { override = false; ultimoAuto = auto; }
+$('dim').className = (auto !== override) ? 'on' : '';
+}
+function relogio() {
+var d = new Date(), h = d.getHours(), m = d.getMinutes(), s = d.getSeconds();
+$('hh').innerHTML = pad(h) + '<span class="colon' + (s % 2 ? ' blink' : '') + '">:</span>' + pad(m);
+$('ss').textContent = pad(s);
+if (m !== ultimoMin) {
+ultimoMin = m;
+$('date').innerHTML = '<b>' + DIAS[d.getDay()] + '</b>, ' + d.getDate() + ' de ' + MESES[d.getMonth()];
+$('greet').textContent = h < 5 ? 'Boa madrugada' : h < 12 ? 'Bom dia' : h < 19 ? 'Boa tarde' : 'Boa noite';
+aplicaNoite();
+if (m % 3 === 0) {
+shiftI = (shiftI + 1) % SHIFTS.length;
+var t = 'translate(' + SHIFTS[shiftI][0] + 'px,' + SHIFTS[shiftI][1] + 'px)';
+$('app').style.webkitTransform = t; $('app').style.transform = t;
+}
+}
+}
+$('t-clock').addEventListener('click', function () { override = !override; aplicaNoite(); }, false);
+function get(url, cb) {
+var x = new XMLHttpRequest();
+x.open('GET', url, true);
+x.onreadystatechange = function () {
+if (x.readyState !== 4) { return; }
+if (x.status >= 200 && x.status < 300) {
+var j; try { j = JSON.parse(x.responseText); } catch (e) { cb(e); return; }
+cb(null, j);
+} else { cb(new Error('http ' + x.status)); }
+};
+x.send();
+}
+function wmo(c) {
+if (c === 0) { return ['☀️', 'Céu limpo']; }
+if (c <= 2) { return ['⛅', 'Parcialmente nublado']; }
+if (c === 3) { return ['☁️', 'Nublado']; }
+if (c === 45 || c === 48) { return ['🌫', 'Neblina']; }
+if (c >= 51 && c <= 57) { return ['🌦', 'Garoa']; }
+if (c >= 61 && c <= 67) { return ['🌧', 'Chuva']; }
+if (c >= 71 && c <= 77) { return ['❄️', 'Neve']; }
+if (c >= 80 && c <= 82) { return ['🌧', 'Pancadas de chuva']; }
+if (c === 85 || c === 86) { return ['❄️', 'Neve']; }
+if (c >= 95) { return ['⛈', 'Tempestade']; }
+return ['·', '—'];
+}
+function clima() {
+$('wx-lbl').textContent = '[02] Clima · ' + cfg.cidade;
+var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + cfg.lat + '&longitude=' + cfg.lon +
+'&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m' +
+'&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=4';
+get(url, function (err, j) {
+if (err || !j.current) {
+$('wx-desc').textContent = 'Clima indisponível agora';
+return;
+}
+var c = j.current, dd = j.daily, w = wmo(c.weather_code);
+$('wx-ico').textContent = w[0];
+$('wx-temp').textContent = Math.round(c.temperature_2m) + '°';
+$('wx-desc').textContent = w[1];
+$('wx-meta').textContent = 'MÁX ' + Math.round(dd.temperature_2m_max[0]) + '° · MÍN ' + Math.round(dd.temperature_2m_min[0]) +
+'° · CHUVA ' + (dd.precipitation_probability_max[0] === null ? '–' : dd.precipitation_probability_max[0]) + '%' +
+' · UMID ' + Math.round(c.relative_humidity_2m) + '% · VENTO ' + Math.round(c.wind_speed_10m) + ' km/h';
+var h = '';
+for (var i = 1; i < dd.time.length && i < 4; i++) {
+var p = dd.time[i].split('-');
+var dia = new Date(+p[0], +p[1] - 1, +p[2]).getDay();
+h += '<div class="wd"><div class="d">' + DIAS_C[dia] + '</div><div class="i">' + wmo(dd.weather_code[i])[0] +
+'</div>' + Math.round(dd.temperature_2m_max[i]) + '° <span style="opacity:.55">' + Math.round(dd.temperature_2m_min[i]) + '°</span></div>';
+}
+$('wx-days').innerHTML = h;
+var n = new Date();
+$('wx-upd').textContent = 'clima ' + pad(n.getHours()) + ':' + pad(n.getMinutes());
+});
+}
+function renderBotoes() {
+var h = '';
+for (var i = 0; i < cfg.botoes.length; i++) {
+var b = cfg.botoes[i];
+h += '<div class="ctl' + (estados[i] ? ' on' : '') + '" data-i="' + i + '">' +
+'<div class="ctl-top"><span class="idx">[03.' + (i + 1) + ']</span><span class="st">' + (estados[i] ? 'Ligado' : 'Desligado') + '</span></div>' +
+'<div class="ctl-ico">' + esc(b.icone || '•') + '</div><div class="ctl-nome">' + esc(b.nome) + '</div>' +
+'<div class="ctl-sent" id="sent' + i + '">↗ enviado</div></div>';
+}
+$('ctls').innerHTML = h;
+}
+function enviar(url, obj) {
+try {
+var x = new XMLHttpRequest();
+x.open('POST', url, true);
+x.setRequestHeader('Content-Type', 'text/plain'); // pedido simples: evita preflight de CORS
+x.send(JSON.stringify(obj));
+} catch (e) {}
+}
+$('ctls').addEventListener('click', function (e) {
+var el = closest(e.target, this, 'data-i');
+if (!el) { return; }
+var i = +el.getAttribute('data-i');
+estados[i] = !estados[i];
+save('estados', estados);
+renderBotoes();
+var b = cfg.botoes[i];
+if (b.url) {
+enviar(b.url, { botao: b.nome, estado: estados[i] ? 'on' : 'off' });
+var s = $('sent' + i); s.className = 'ctl-sent show';
+setTimeout(function () { var s2 = $('sent' + i); if (s2) { s2.className = 'ctl-sent'; } }, 1500);
+}
+}, false);
+function renderLista() {
+var h = '';
+for (var i = 0; i < lista.length; i++) {
+h += '<li data-i="' + i + '" class="' + (lista[i].ok ? 'ok' : '') + '"><span class="bx">' + (lista[i].ok ? '✓' : '') +
+'</span><span class="tx">' + esc(lista[i].t) + '</span><span class="x" data-x="1">×</span></li>';
+}
+$('list').innerHTML = h || '<li style="opacity:.45;border:0">Nada por enquanto.</li>';
+}
+$('list-form').addEventListener('submit', function (e) {
+e.preventDefault();
+var v = $('list-in').value.replace(/^\s+|\s+$/g, '');
+if (!v) { return; }
+lista.unshift({ t: v, ok: false });
+save('lista', lista); renderLista();
+$('list-in').value = '';
+}, false);
+$('list').addEventListener('click', function (e) {
+var li = closest(e.target, this, 'data-i');
+if (!li) { return; }
+var i = +li.getAttribute('data-i');
+if (e.target.getAttribute('data-x')) { lista.splice(i, 1); } else { lista[i].ok = !lista[i].ok; }
+save('lista', lista); renderLista();
+}, false);
+$('list-clear').addEventListener('click', function () {
+var n = [];
+for (var i = 0; i < lista.length; i++) { if (!lista[i].ok) { n.push(lista[i]); } }
+lista = n; save('lista', lista); renderLista();
+}, false);
+var tTotal = 0, tRest = 0, tFim = 0, tRodando = false;
+var actx = null;
+function destravaAudio() {
+if (actx) { return; }
+var AC = window.AudioContext || window.webkitAudioContext;
+if (!AC) { return; }
+try {
+actx = new AC();
+var buf = actx.createBuffer(1, 1, 22050), src = actx.createBufferSource();
+src.buffer = buf; src.connect(actx.destination);
+if (src.start) { src.start(0); } else if (src.noteOn) { src.noteOn(0); }
+} catch (e) { actx = null; }
+}
+document.addEventListener('touchend', destravaAudio, false);
+document.addEventListener('click', destravaAudio, false);
+function bipe() {
+if (!actx) { return; }
+try {
+for (var i = 0; i < 4; i++) {
+var o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + i * 0.45;
+o.frequency.value = 880; o.connect(g); g.connect(actx.destination);
+g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.4, t + 0.02); g.gain.linearRampToValueAtTime(0.0001, t + 0.3);
+if (o.start) { o.start(t); o.stop(t + 0.32); } else { o.noteOn(t); o.noteOff(t + 0.32); }
+}
+} catch (e) {}
+}
+function mostraTimer() {
+var r = Math.max(0, Math.ceil(tRest));
+$('tm-disp').textContent = pad(Math.floor(r / 60)) + ':' + pad(r % 60);
+$('tm-fill').style.width = tTotal ? (100 * (1 - tRest / tTotal)) + '%' : '0';
+$('tm-go').textContent = tRodando ? 'Pausar' : 'Iniciar';
+}
+function tickTimer() {
+if (!tRodando) { return; }
+tRest = (tFim - Date.now()) / 1000;
+if (tRest <= 0) {
+tRest = 0; tRodando = false;
+$('t-timer').className = 'tile alarme';
+bipe();
+}
+mostraTimer();
+}
+$('t-timer').addEventListener('click', function (e) {
+var el = e.target, m = el.getAttribute('data-m');
+if ($('t-timer').className.indexOf('alarme') > -1) { $('t-timer').className = 'tile'; if (!m && el.id !== 'tm-go') { return; } }
+if (m) {
+tRest += +m * 60; tTotal = Math.max(tTotal, 0) + +m * 60;
+if (tRodando) { tFim += +m * 60000; }
+} else if (el.id === 'tm-go') {
+if (tRest <= 0) { return; }
+tRodando = !tRodando;
+if (tRodando) { tFim = Date.now() + tRest * 1000; }
+} else if (el.id === 'tm-rst') {
+tRodando = false; tRest = 0; tTotal = 0;
+}
+mostraTimer();
+}, false);
+var notesT = null;
+$('notes').value = load('recados', 'Lixo reciclável: terça e sexta\nRegar as plantas no domingo');
+$('notes').addEventListener('input', function () {
+clearTimeout(notesT);
+notesT = setTimeout(function () { save('recados', $('notes').value); }, 400);
+}, false);
+function rede() {
+var on = navigator.onLine !== false;
+$('net').className = 'hstat' + (on ? '' : ' off');
+$('net').textContent = on ? 'online' : 'offline';
+}
+window.addEventListener('online', function () { rede(); clima(); }, false);
+window.addEventListener('offline', rede, false);
+var temaRascunho = cfg.tema;
+function opcoesHora(sel, v) {
+var h = '';
+for (var i = 0; i < 24; i++) { h += '<option value="' + i + '"' + (i === v ? ' selected' : '') + '>' + pad(i) + 'h</option>'; }
+sel.innerHTML = h;
+}
+function marcaTema() {
+var cs = $('cfg-temas').getElementsByTagName('button');
+for (var i = 0; i < cs.length; i++) { cs[i].className = 'chip' + (cs[i].getAttribute('data-t') === temaRascunho ? ' sel' : ''); }
+}
+function abreCfg() {
+temaRascunho = cfg.tema; marcaTema();
+$('c-cidade').value = cfg.cidade; $('c-lat').value = cfg.lat; $('c-lon').value = cfg.lon;
+$('geo-q').value = ''; $('geo-res').textContent = '';
+opcoesHora($('c-ni'), cfg.noiteIni); opcoesHora($('c-nf'), cfg.noiteFim);
+var h = '';
+for (var i = 0; i < cfg.botoes.length; i++) {
+var b = cfg.botoes[i];
+h += '<div class="frow"><input id="b-ico' + i + '" type="text" style="width:56px;text-align:center" value="' + esc(b.icone) + '">' +
+'<input id="b-nome' + i + '" type="text" style="width:170px" value="' + esc(b.nome) + '">' +
+'<input id="b-url' + i + '" class="grow" type="url" placeholder="Link do webhook (opcional)" value="' + esc(b.url) + '"></div>';
+}
+$('cfg-btns').innerHTML = h;
+$('cfg').className = 'open';
+}
+function fechaCfg() { $('cfg').className = ''; aplicaTema(); }
+$('btn-cfg').addEventListener('click', abreCfg, false);
+$('cfg-cancel').addEventListener('click', fechaCfg, false);
+$('cfg-temas').addEventListener('click', function (e) {
+var t = e.target.getAttribute('data-t');
+if (!t) { return; }
+temaRascunho = t; marcaTema();
+document.body.className = 't-' + t; // prévia ao vivo atrás do painel
+}, false);
+$('geo-go').addEventListener('click', function () {
+var q = $('geo-q').value.replace(/^\s+|\s+$/g, '');
+if (!q) { return; }
+$('geo-res').textContent = 'buscando…';
+get('https://geocoding-api.open-meteo.com/v1/search?count=1&language=pt&name=' + encodeURIComponent(q), function (err, j) {
+if (err || !j.results || !j.results.length) { $('geo-res').textContent = 'não encontrei'; return; }
+var r = j.results[0];
+$('c-cidade').value = r.name; $('c-lat').value = r.latitude.toFixed(2); $('c-lon').value = r.longitude.toFixed(2);
+$('geo-res').textContent = '✓ ' + (r.admin1 ? r.admin1 + ', ' : '') + (r.country || '');
+});
+}, false);
+$('cfg-save').addEventListener('click', function () {
+var lat = parseFloat($('c-lat').value), lon = parseFloat($('c-lon').value);
+cfg.tema = temaRascunho;
+cfg.cidade = $('c-cidade').value || cfg.cidade;
+if (!isNaN(lat) && !isNaN(lon)) { cfg.lat = lat; cfg.lon = lon; }
+cfg.noiteIni = +$('c-ni').value; cfg.noiteFim = +$('c-nf').value;
+for (var i = 0; i < cfg.botoes.length; i++) {
+cfg.botoes[i] = { icone: $('b-ico' + i).value, nome: $('b-nome' + i).value || ('Botão ' + (i + 1)), url: $('b-url' + i).value.replace(/^\s+|\s+$/g, '') };
+}
+save('cfg', cfg);
+fechaCfg(); renderBotoes(); clima(); ultimoAuto = null; aplicaNoite();
+}, false);
+$('cfg-reset').addEventListener('click', function () {
+var bt = $('cfg-reset');
+if (bt.getAttribute('data-arm') !== '1') {
+bt.setAttribute('data-arm', '1'); bt.textContent = 'Toque de novo para confirmar';
+setTimeout(function () { bt.setAttribute('data-arm', '0'); bt.textContent = 'Restaurar padrão'; }, 3000);
+return;
+}
+bt.setAttribute('data-arm', '0'); bt.textContent = 'Restaurar padrão';
+cfg = clone(PADRAO); save('cfg', cfg);
+fechaCfg(); renderBotoes(); clima(); ultimoAuto = null; aplicaNoite();
+}, false);
+aplicaTema(); renderBotoes(); renderLista(); mostraTimer(); rede(); relogio(); clima();
+setInterval(relogio, 1000);
+setInterval(tickTimer, 500);
+setInterval(clima, 15 * 60 * 1000);
+setInterval(function () { var d = new Date(); if (d.getHours() === 4 && d.getMinutes() === 0 && !tRodando) { window.location.reload(); } }, 60000);
+})();
+</script>
+</body>
+</html>
